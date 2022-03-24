@@ -1,5 +1,19 @@
 package org.juhewu.oss.spring.boot.core;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import org.juhewu.oss.spring.boot.config.OssProperties;
+import org.springframework.beans.factory.InitializingBean;
+
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -8,20 +22,17 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.IOUtils;
 
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-
-import org.juhewu.oss.spring.boot.config.OssProperties;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.*;
 
 /**
  * aws-s3 通用存储操作
@@ -166,9 +177,9 @@ public class OssTemplate implements InitializingBean {
      * @param bucketName bucket名称
      * @param objectName 文件名称
      * @param stream 文件流
-     * @throws Exception 上传文件异常
      */
-    public void putObject(String bucketName, String objectName, InputStream stream) throws Exception {
+    @SneakyThrows
+    public void putObject(String bucketName, String objectName, InputStream stream) {
         putObject(bucketName, objectName, stream, stream.available(), "application/octet-stream");
     }
 
@@ -179,7 +190,6 @@ public class OssTemplate implements InitializingBean {
      * @param objectName 文件名称
      * @param stream 文件流
      * @param contextType 文件类型
-     * @throws Exception 上传文件异常
      */
     public void putObject(String bucketName, String objectName, InputStream stream, String contextType)
             throws Exception {
@@ -195,13 +205,11 @@ public class OssTemplate implements InitializingBean {
      * @param size 大小
      * @param contextType 类型
      * @return PutObjectResult
-     * @throws Exception 上传文件异常
-     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutObject">AWS
-     * API Documentation</a>
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutObject">AWS API Documentation</a>
      */
+    @SneakyThrows
     public PutObjectResult putObject(String bucketName, String objectName, InputStream stream, long size,
-            String contextType) throws Exception {
-        // String fileName = getFileName(objectName);
+            String contextType) {
         byte[] bytes = IOUtils.toByteArray(stream);
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(size);
@@ -217,11 +225,11 @@ public class OssTemplate implements InitializingBean {
      *
      * @param bucketName bucket名称
      * @param objectName 文件名称
-     * @throws Exception 获取文件异常
-     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">AWS
-     * API Documentation</a>
+     * @return 文件信息
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetObject">AWS API Documentation</a>
      */
-    public S3Object getObjectInfo(String bucketName, String objectName) throws Exception {
+    @SneakyThrows
+    public S3Object getObjectInfo(String bucketName, String objectName) {
         @Cleanup
         S3Object object = amazonS3.getObject(bucketName, objectName);
         return object;
@@ -232,9 +240,7 @@ public class OssTemplate implements InitializingBean {
      *
      * @param bucketName bucket名称
      * @param objectName 文件名称
-     * @see <a href=
-     * "http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/DeleteObject">AWS API
-     * Documentation</a>
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/DeleteObject">AWS API Documentation</a>
      */
     public void removeObject(String bucketName, String objectName) {
         amazonS3.deleteObject(bucketName, objectName);
@@ -247,7 +253,6 @@ public class OssTemplate implements InitializingBean {
      * @param filename 源文件名
      * @param targetBucket 目标bucket
      * @param targetFilename 目标文件名
-     * @throws Exception 复制文件异常
      */
     @SneakyThrows
     public void copyFile(String fromBucket, String filename, String targetBucket, String targetFilename) {
@@ -268,5 +273,4 @@ public class OssTemplate implements InitializingBean {
                 .withClientConfiguration(clientConfiguration).withCredentials(awsCredentialsProvider)
                 .disableChunkedEncoding().withPathStyleAccessEnabled(ossProperties.getPathStyleAccess()).build();
     }
-
 }

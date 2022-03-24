@@ -25,6 +25,33 @@ juhewu:
     bucket-name: ${CIIC_S3_BUCKET:100}
 ```
 
+2. 注入 oss 对象
+
+```java
+    private final OssTemplate template;
+```
 ## 功能说明
 
+1. 创建bucket
 
+如果bucket 不存，则会创建，已存在不会创建。
+
+```java
+    template.createBucket(bucketName);
+```
+
+2. 上传对象
+
+在指定的 bucket 上传对象，objectName 需要唯一，重名会覆盖，可以使用文件的 md5 + 文件扩展名来命名。
+
+```java
+   template.putObject(bucketName, objectName, inputStream);
+```
+
+3. 下载对象
+
+在指定的 bucket 下载对象。
+
+```java
+   template.getObject(bucketName, objectName); // 获取文件 InputStream： .getObjectContent();
+```
