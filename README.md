@@ -19,10 +19,14 @@
 juhewu:
   # oss 存储
   oss:
-    access-key: ${CIIC_S3_ACCESS:minioadmin}
-    secret-key: ${CIIC_S3_SECRET:minioadmin}
-    endpoint: ${CIIC_S3_ENDPOINT:ciic-base-minio}
-    bucket-name: ${CIIC_S3_BUCKET:100}
+    # access
+    access-key: ${JUHEWU_S3_ACCESS:minioadmin}
+    # secret
+    secret-key: ${JUHEWU_S3_SECRET:minioadmin}
+    # 连接地址
+    endpoint: ${JUHEWU_S3_ENDPOINT:ciic-base-minio}
+    # 默认 bucket
+    bucket-name: ${JUHEWU_S3_BUCKET:100}
 ```
 
 2. 注入 oss 对象
